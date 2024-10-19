@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>答题环节</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            height: 100%;
+            min-height: 100vh; /* 确保填满整个视口高度 */
+            margin: 0;
+            overflow: hidden;
+            background-image: url('/static/R-C.jpg');
+            background-size: cover;
+            background-repeat: repeat;
+            background-position: center center;
+            font-family: 'Arial', sans-serif;
+            color: #333;
+            line-height: 1.6;
+        }
+
+
+        @media (max-width: 768px) {
+            body {
+                background-size: cover; /* 在手机端也保持 cover */
+                background-position: center; /* 确保居中 */
+            }
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-right: 1px solid #ccc;
+            padding: 20px;
+            z-index: 1;
+        }
+
+        .sidebar div {
+            border-bottom: 1px solid #ccc;
+            padding: 10px 0;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #333;
+            text-decoration: none;
+            padding: 10px;
+        }
+
+        .sidebar a:hover {
+            background-color: #ddd;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .option {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        input[type="submit"],
+        .round-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        input[type="submit"]:hover,
+        .round-button:hover {
+            background-color: #4cae4c;
+        }
+
+        #dice-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            perspective: 800px;
+        }
+
+        .dice {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            animation: roll 2s cubic-bezier(0.1, 0.9, 0.2, 1);
+        }
+
+        .side {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 1px solid #000;
+            backface-visibility: hidden;
+        }
+
+            .progress-bar-container {
+                width: 100%;
+                background-color: #d0e9c6; /* 浅绿色，用于未填满区域 */
+                margin-bottom: 10px;
+            }
+
+            .progress-bar {
+                background-color: #5cb85c; /* 深绿色，用于填满区域 */
+                color: white;
+                text-align: center;
+                border-radius: 13px;
+                padding: 3px;
+                position: relative; /* 确保子元素可以在其中绝对定位 */
+                height: 20px; /* 如果尚未定义，则给出高度 */
+            }
+
+            .progress-bar-fill {
+                background-color: #5cb85c; /* 填满区域的深绿色 */
+                color: black; /* 填充区域的文本颜色 */
+                border-radius: 10px;
+                position: absolute; /* 在进度条中绝对定位 */
+                left: 0; /* 从左边开始 */
+                height: 100%; /* 填充父元素的高度 */
+                line-height: 20px; /* 文本垂直居中，假设高度为20px */
+                top: 0; /* 与顶部对齐 */
+                min-width: 20px; /* 填充的最小宽度，以显示百分比 */
+            }
+
+
+
+        .side:nth-child(1) {
+            background-image: url('/static/dice-1.jpg');
+            transform: rotateX(0deg) translateZ(50px);
+        }
+
+        .side:nth-child(2) {
+            background-image: url('/static/dice-2.jpg');
+            transform: rotateX(90deg) translateZ(50px);
+        }
+
+        .side:nth-child(3) {
+            background-image: url('/static/dice-3.jpg');
+            transform: rotateX(180deg) translateZ(50px);
+        }
+
+        .side:nth-child(4) {
+            background-image: url('/static/dice-4.jpg');
+            transform: rotateX(270deg) translateZ(50px);
+        }
+
+        .side:nth-child(5) {
+            background-image: url('/static/dice-5.jpg');
+            transform: rotateY(90deg) translateZ(50px);
+        }
+
+        .side:nth-child(6) {
+            background-image: url('/static/dice-6.jpg');
+            transform: rotateY(270deg) translateZ(50px);
+        }
+
+        @keyframes roll {
+            0% {
+                transform: rotate3d(1, 1, 1, 0deg);
+            }
+
+            100% {
+                transform: rotate3d(1, 1, 1, 360deg);
+            }
+        }
+
+        /* 粒子背景样式 */
+        .particle-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: move 10s infinite;
+        }
+
+        @keyframes move {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(1000px, 1000px);
+            }
+        }
+
+        @keyframes move2 {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(-1000px, 1000px);
+            }
+        }
+
+        @keyframes move3 {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(1000px, -1000px);
+            }
+        }
+
+        @keyframes move4 {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(-1000px, -1000px);
+            }
+        }
+
+        /* 平板和手机端样式 */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 150px;
+            }
+
+            .container {
+                width: 85%;
+                margin: 20px auto;
+            }
+
+            h2 {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .menu-toggle {
+                display: block;
+                background-color: #333;
+                color: white;
+                padding: 10px;
+                text-align: center;
+                cursor: pointer;
+            }
+
+            .container {
+                width: 95%;
+                margin: 0 auto;
+                padding: 15px;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .option {
+                font-size: 14px;
+            }
+
+            input[type="submit"],
+            .round-button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar" id="sidebar">
+        <div><a href="/">首页</a></div>
+        <div><a href="/choose_hobby">选择爱好</a></div>
+        <div><a href="/game">游戏</a></div>
+        <div><a href="/encyclopedia">图鉴</a></div>
+        <div><a href="/login">登录</a></div>
+        <div><a href="/register">注册</a></div>
+    </div>
+
+    <div class="particle-background" id="particleBackground"></div>
+
+    <div class="container">
+        <div class="progress-bar-container">
+            <div class="progress-bar">
+                <div class="progress-bar-fill" id="progressBarFill">0%</div>
+            </div>
+        </div>
+        <h2>你最喜欢的户外活动是什么？</h2>
+<form method="POST" onsubmit="return validateForm()">
+    
+    <div class="option">
+        <input type="radio" name="answer" value="0"> <label>徒步</label><br>
+    </div>
+    
+    <div class="option">
+        <input type="radio" name="answer" value="1"> <label>骑行</label><br>
+    </div>
+    
+    <div class="option">
+        <input type="radio" name="answer" value="2"> <label>钓鱼</label><br>
+    </div>
+    
+    <div class="option">
+        <input type="radio" name="answer" value="3"> <label>露营</label><br>
+    </div>
+    
+    <input type="submit" value="提交">
+    <button type="button" onclick="location.href='/sign_in';" class="round-button">签到</button>
+    
+</form>
+        <div id="dice-container">
+            <div class="dice">
+                <div class="side"></div>
+                <div class="side"></div>
+                <div class="side"></div>
+                <div class="side"></div>
+                <div class="side"></div>
+                <div class="side"></div>
+            </div>
+        </div>
+        <button onclick="rollDice()" class="round-button">掷骰子</button>
+    </div>
+
+    <div style="position: fixed; bottom: 20px; left: 0; width: 100%; text-align: center; font-weight: bold; color: #007bff;">
+        <p>无论你在何处，无论你面临什么挑战，记得总有爱和希望与你同在。</p>
+    </div>
+
+    <script>
+            function validateForm() {
+                const options = document.getElementsByName('answer');
+                let isChecked = false;
+                
+                for (const option of options) {
+                    if (option.checked) {
+                        isChecked = true;
+                        break;
+                    }
+                }
+
+                if (!isChecked) {
+                    alert('请选择一个选项后再提交！');
+                    return false;  // 阻止表单提交
+                }
+
+                return true;  // 允许表单提交
+            }
+        function rollDice() {
+            var dice = document.querySelector('.dice');
+            dice.style.animation = 'none';
+            dice.offsetHeight; // 触发重新绘制以便重置动画
+
+            var result = Math.floor(Math.random() * 6) + 1;
+            var rotations = [
+                'rotateX(0deg) rotateY(0deg)',  // 1
+                'rotateX(90deg)',               // 2
+                'rotateX(180deg)',              // 3
+                'rotateX(270deg)',              // 4
+                'rotateY(90deg)',               // 5
+                'rotateY(-90deg)'               // 6
+            ];
+
+            dice.style.transform = 'rotateX(0deg) rotateY(0deg)';  // 重置初始位置
+            dice.style.animation = 'roll 2s cubic-bezier(0.1, 0.9, 0.2, 1)';
+            
+            dice.addEventListener('animationend', function() {
+                dice.style.animation = 'none';
+                dice.style.transform = rotations[result - 1];  // 根据随机数设置骰子最终位置
+            }, { once: true });
+        }
+
+
+        function createParticleBackground() {
+            const particleBackground = document.getElementById('particleBackground');
+            const numberOfParticles = 200;
+            const animations = ['move', 'move2', 'move3', 'move4'];
+
+            for (let i = 0; i < numberOfParticles; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationName = animations[Math.floor(Math.random() * animations.length)];
+                particleBackground.appendChild(particle);
+            }
+        }
+
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.style.display = sidebar.style.display === "block" ? "none" : "block";
+        }
+
+        var progress = 0.0; // This is your progress value
+        var progressBarFill = document.getElementById('progressBarFill');
+
+        // Format the progress to 2 decimal places
+        progress = parseFloat(progress).toFixed(2);
+
+        // Update the width and text content of the progress bar fill
+        progressBarFill.style.width = progress + '%';
+        progressBarFill.textContent = progress + '%';
+        document.addEventListener('DOMContentLoaded', createParticleBackground);
+    </script>
+</body>
+
+</html>
